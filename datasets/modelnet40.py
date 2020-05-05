@@ -79,9 +79,8 @@ class ModelNet40(Dataset):
     for fn in filenames_:
       try:
         n_faces = int(fn.split('.')[-2].split('_')[-1])
-        if 'train' in fn:
-          if n_faces > self.params.train_min_max_faces2use[1] or n_faces < self.params.train_min_max_faces2use[0]:
-            continue
+        if n_faces > self.params.train_min_max_faces2use[1] or n_faces < self.params.train_min_max_faces2use[0]:
+          continue
       except:
         pass
       filenames.append(fn)
@@ -95,19 +94,15 @@ class ModelNet40(Dataset):
     return walks
 
   def __len__(self):
+    if self.mode == 'test':
+      return len(self.input_meshes[self.mode]) * 32
     return len(self.input_meshes[self.mode])
 
   def __getitem__(self, item):
-    mesh = load_npz(self.input_meshes[self.mode][item], self.params)
     if self.mode == 'test':
-      walks = []
-      for i in range(self.params.batch_size):
-      # for i in range(2):
-        walk = self._get_walks(mesh)
-        walks.append(walk)
-      walks = np.concatenate(walks, axis=0)
-    else:
-      walks = self._get_walks(mesh)
+        item = item // 32
+    mesh = load_npz(self.input_meshes[self.mode][item], self.params)
+    walks = self._get_walks(mesh)
     return mesh, walks
 
   def collate_fn(self, batch):

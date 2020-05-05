@@ -35,10 +35,10 @@ def set_up_default_params(network_task, run_name, cont_run_number=0):
   # Optimizer params
   params.optimizer_type = 'adam'  # sgd / adam
   params.learning_rate_dynamics = 'steps'
-  params.learning_rate =       [2e-4, 1e-4,  5e-5,  2e-5 ]
+  params.learning_rate =       [1e-3, 5e-4,  1e-4,  2e-5 ]
   params.learning_rate_steps = [0,    50e3,  150e3, 300e3, np.inf]
 
-  params.EPOCHS = 5000000
+  params.EPOCHS = 600
   params.n_models_per_test_epoch = 300
 
   params.gradient_clip_th = 1
@@ -75,7 +75,7 @@ def set_up_default_params(network_task, run_name, cont_run_number=0):
     params.network_tasks = ['semantic_segmentation', 'self:triplets']
   else:
     raise Exception('Unsuported params.network_task: ' + params.network_task)
-  params.batch_size = int(32 / params.n_walks_per_model)
+  params.batch_size = int(256 / params.n_walks_per_model)
 
   # Other params
   params.log_freq = 100

@@ -90,8 +90,8 @@ class ModelNet40(Dataset):
     return filenames
 
   def _get_walks(self, mesh):
-    walks, _ = generate_walk(mesh, self.params)
-    return walks
+    walks, _, jumps = generate_walk(mesh, self.params)
+    return walks, jumps
 
   def __len__(self):
     if self.mode == 'test':
@@ -102,14 +102,15 @@ class ModelNet40(Dataset):
     if self.mode == 'test':
         item = item // 32
     mesh = load_npz(self.input_meshes[self.mode][item], self.params)
-    walks = self._get_walks(mesh)
-    return mesh, walks
+    walks, jumps = self._get_walks(mesh)
+    return mesh, walks, jumps
 
   def collate_fn(self, batch):
     returndict = {}
     returndict['mesh_data'] = [x[0] for x in batch]
     returndict['walks'] = torch.cat([torch.from_numpy(x[1]) for x in batch])
     returndict['label'] = torch.stack([torch.from_numpy(x[0]['labels']) for x in batch])
+    returndict['jumps'] = torch.stack([torch.from_numpy(np.asarray(x[2])) for x in batch])
     return returndict
 
   def test(self):

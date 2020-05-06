@@ -1,7 +1,7 @@
 import os
 import shutil
 import json
-from copy import copy
+import copy
 import numpy as np
 import datetime
 import logging
@@ -55,6 +55,8 @@ def backup_python_files_and_params(params):
       prm2dump.hparams_metrics = prm2dump.hparams_metrics[0]._display_name
       for l in prm2dump.net:
         l['layer_function'] = 'layer_function'
+      prm2dump.fill_features_functions = ['function']
+      prm2dump.walk_function = ['function']
     with open(params.logdir + '/params.txt', 'w') as fp:
       json.dump(prm2dump, fp, indent=2, sort_keys=True)
   except:

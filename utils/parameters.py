@@ -33,7 +33,7 @@ def set_up_default_params(network_task, run_name, cont_run_number=0):
   params.model_fn = params.logdir + '/learned_model.keras'
 
   # Optimizer params
-  params.optimizer_type = 'adam'  # sgd / adam
+  params.optimizer_type = 'cyclic'  # sgd / adam
   params.learning_rate_dynamics = 'steps'
   params.learning_rate =       [1e-3, 5e-4,  1e-4,  2e-5 ]
   params.learning_rate_steps = [0,    50e3,  150e3, 300e3, np.inf]
@@ -75,7 +75,7 @@ def set_up_default_params(network_task, run_name, cont_run_number=0):
     params.network_tasks = ['semantic_segmentation', 'self:triplets']
   else:
     raise Exception('Unsuported params.network_task: ' + params.network_task)
-  params.batch_size = int(256 / params.n_walks_per_model)
+  params.batch_size = int(128 / params.n_walks_per_model)
 
   # Other params
   params.log_freq = 100
@@ -452,7 +452,7 @@ def modelnet_params():
   params.datasets2use['train'] = ['./Data/' + p + '/*train*.npz']
   params.datasets2use['test'] = ['./Data/' + p + '/*test*.npz']
   #params.train_data_augmentation = {'aspect_ratio': 0.5}
-  params.train_min_max_faces2use = [0, 4000]
+  params.train_min_max_faces2use = [0, 1000]
   params.test_min_max_faces2use = [0, 1000]
   params.reverse_walk = False
   if 0: # best so far
@@ -469,9 +469,8 @@ def modelnet_params():
                                         'maximal_learning_rate': 2e-4,
                                         'step_size': 10000})
 
-    params.seq_len = 200
+    params.seq_len = 400
     params.min_seq_len = int(params.seq_len / 2)
-    params.train_min_max_faces2use = [0, 1000]
     params.net_input = ['xyz']  # 'xyz', 'dxdydz', 'curv', 'normals', 'fpfh', 'jump_indication'
     params.walk_alg = 'no_jumps'  # no_repeat / no_jumps / fast / fastest / only_jumps / local_jumps / no_local_jumps
     #params.layer_sizes = {'fc1': 128, 'fc2': 256, 'gru1': 256, 'gru2': 256, 'gru3': 256}

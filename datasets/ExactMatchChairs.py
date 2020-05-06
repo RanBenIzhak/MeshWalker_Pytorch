@@ -19,7 +19,6 @@ class ExactMatchChairs(Dataset):
     super(ExactMatchChairs, self).__init__()
     self.parmas=params
     # We use ExactMatch (Li et al. 2015 - Joint embedding) chairs split
-    self._get_splits()
     self.images = {'train': [], 'val': [], 'test': []}
     self.imid2shapeid = {'train': [], 'val': [], 'test': []}
     self.file = {'train': [], 'val': [], 'test': []}
@@ -27,10 +26,11 @@ class ExactMatchChairs(Dataset):
     self.input_labels = {'training': [], 'validation': [], 'test': []}
     self.shape_feats = {}
     self.input_meshes = {'training': [], 'validation': [], 'test': [], 'all': {}}
+    self._get_splits()
 
   def _get_splits(self):
     # ==== Constants, paths, loading files needed for data management
-    data_folder = '/home/ran/PycharmProjects/JointEmbedding-master/data'
+    data_folder = '/home/ran/PycharmProjects/JointEmbedding/data'
     base_filename = os.path.join(data_folder, 'image_embedding', 'syn_images_{}_03001627_{}.txt')
     shapelist_filename = 'shape_list_03001627.txt'  # 0 to 6777  (NOT same as in ExactMatch folder!)
     self.shapeid2shapemd = [x[:-1].split(' ')[1] for x in

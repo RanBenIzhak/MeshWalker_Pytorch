@@ -30,7 +30,7 @@ def generate_walk(mesh_data, dataset_params):
     f_idx = 0
     for fill_ftr_fun in dataset_params.fill_features_functions:
       f_idx = fill_ftr_fun(features[walk_id], f_idx, vertices, mesh_extra, seq, jumps, seq_len)
-  return features, labels
+  return features, labels, np.count_nonzero(jumps)
 
 def jump_to_closest_unviseted(model_kdtree_query, model_n_vertices, walk, enable_super_jump=True):
   for nbr in model_kdtree_query[walk[-1]]:

@@ -47,7 +47,7 @@ if LOAD_NET:
 # ====  set optimizer ==== #
 if params.optimizer_type == 'adam':
   optimizer = torch.optim.Adam(params=dnn_model.parameters(), lr=params.learning_rate[0])  #lr=params.learning_rate[0])
-  scheduler = torch.optim.ReduceLROnPlateau(optimizer, 'min', min_lr=1e-7, factor=0.3, verbose=True)
+  scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', min_lr=1e-7, factor=0.3, verbose=True)
   clipnorm = params.gradient_clip_th
 elif params.optimizer_type == 'cycle':
   # TODO: test cylic LR in pytorch
@@ -69,7 +69,7 @@ time_msrs = {x: 0 for x in ['train_step', 'train_step_triplet', 'get_train_data'
 # ====== Train loop ====== #
 cur_lr = params.learning_rate[0]
 best_val_acc = 0
-cur_loss = RunningWindow(N=1000)
+cur_loss = RunningWindow(N=200)
 
 for epoch in range(params.EPOCHS):
   epoch_start_time = time.time()
@@ -77,11 +77,11 @@ for epoch in range(params.EPOCHS):
   dnn_model.train()
   epoch_loss = 0
   epoch_acc = 0
-  if epoch in [100, 200, 300, 400]:
-    for param_group in optimizer.param_groups:
-      cur_lr = cur_lr * 0.5
-      param_group['lr'] = cur_lr
-      print('Reduced LR to {}'.format(cur_lr))
+  # if epoch in [100, 200, 300, 400]:
+  #   for param_group in optimizer.param_groups:
+  #     cur_lr = cur_lr * 0.3
+  #     param_group['lr'] = cur_lr
+  #     print('Reduced LR to {}'.format(cur_lr))
   print('========== Train epoch {} =========='.format(epoch))
   for i, batch in enumerate(train_dl):
     batch_start_time = time.time()
@@ -116,7 +116,7 @@ for epoch in range(params.EPOCHS):
     epoch_loss += ce_loss.item()
     epoch_acc += correct.float()
     if i % 10 == 0:
-      print('Cur loss: {:2.3f}, batch accuracy: {:2.3f}'.format(cur_loss(), correct.float() / params.batch_size))
+      print('Cur loss: {:2.3f}, batch accuracy: {:2.3f}'.format(cur_loss(), correct.float() / pred_choice.shape[0]))
 
   scheduler.step(epoch_loss / (i+1))
   logging.info('Epoch {} Loss: {:2.3f}\t '
@@ -143,7 +143,6 @@ for epoch in range(params.EPOCHS):
         epoch_outputs.append(output[1].data.mean(dim=0).argmax())
         labels_outputs.append(labels[0])
         if short_run and i == 80:  # 2 models per class? just to check Acc is going up
-          print('Short test run')
           break
     preds = torch.stack(epoch_outputs).cpu().numpy()
     targets = torch.stack(labels_outputs).cpu().numpy()
@@ -151,7 +150,7 @@ for epoch in range(params.EPOCHS):
     conf_mat = confusion_matrix(targets, preds)
     logging.info('Epoch {}, {} test samples accuracy: {:2.3f}\t time: {:3.1f} seconds'.format(epoch, i, test_acc, time.time()- test_time))
 
-    if test_acc > best_val_acc:
+    if test_acc > best_val_acc and not short_run:
       best_val_acc = test_acc
       save_dir = os.path.join(params.logdir, 'weights')
       if not os.path.exists(save_dir):
